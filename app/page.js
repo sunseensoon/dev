@@ -24,7 +24,7 @@ export default function Home() {
       console.log(data);return;}
 
     setShortUrl(
-      `http://localhost:3000/${data.shortCode}`
+      `${window.location.origin}/${data.shortCode}`
     );
   }
 
