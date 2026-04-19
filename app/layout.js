@@ -1,14 +1,16 @@
+import "./globals.css";
+
 export const metadata = {
-  title: "URL Shortener",
-  description: "Mini project",
+ title: "Minguri URL Shortener",
+ description: "Shorten links"
 };
 
 export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+ return (
+   <html lang="en">
+     <body>
+       {children}
+     </body>
+   </html>
+ );
 }
