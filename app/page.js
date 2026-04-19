@@ -3,59 +3,164 @@
 import { useState } from "react";
 
 export default function Home() {
+
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function handleShorten() {
+
     if (!url) return;
 
-    const res = await fetch("/api/shorten", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        longUrl: url
-      })
-    });
+    setLoading(true);
+    setCopied(false);
 
-    const data = await res.json();
-    if (!res.ok) {
-      console.log(data);return;}
+    try {
 
-    setShortUrl(
-      `http://localhost:3000/${data.shortCode}`
-    );
+      const res = await fetch("/api/shorten", {
+        method: "POST",
+        headers: {
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          longUrl: url
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) return;
+
+      setShortUrl(
+        `${window.location.origin}/${data.shortCode}`
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
+
+  async function handleCopy() {
+
+    await navigator.clipboard.writeText(shortUrl);
+
+    setCopied(true);
+
+    setTimeout(() => {
+
+      setCopied(false);
+
+    },2000);
+
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-xl p-6">
-        <h1 className="text-3xl font-bold mb-6">
-          URL Shortener
-        </h1>
 
-        <input
-          type="text"
-          placeholder="Paste long URL here..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full border p-3 rounded mb-4"
-        />
+    <main className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
 
-        <button
-          onClick={handleShorten}
-          className="w-full bg-black text-white p-3 rounded"
-        >
-          Shorten URL
-        </button>
+      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-gray-200 p-10">
+
+        <div className="text-center mb-10">
+
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Minguri
+          </h1>
+
+          <p className="text-gray-500 text-lg">
+            Shorten long links into clean shareable URLs.
+          </p>
+
+        </div>
+
+        <div className="flex gap-3 mb-8">
+
+          <input
+            type="text"
+            placeholder="Paste a long URL..."
+            value={url}
+            onChange={(e)=>setUrl(e.target.value)}
+            className="
+              flex-1
+              p-4
+              rounded-2xl
+              border
+              border-gray-300
+              bg-white
+              outline-none
+              focus:ring-2
+              focus:ring-black
+              focus:border-black
+            "
+          />
+
+          <button
+            onClick={handleShorten}
+            disabled={loading}
+            className="
+              px-6
+              rounded-2xl
+              bg-black
+              text-white
+              font-semibold
+            "
+          >
+            {loading ? "Working..." : "Shorten"}
+          </button>
+
+        </div>
 
         {shortUrl && (
-          <p className="mt-4 text-green-600">
-            {shortUrl}
-          </p>
+
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-6">
+
+            <p className="text-sm text-gray-500 mb-3">
+              Your short link:
+            </p>
+
+            <div className="flex gap-3 items-center">
+
+              <a
+                href={shortUrl}
+                target="_blank"
+                className="
+                  flex-1
+                  text-green-700
+                  break-all
+                  font-medium
+                "
+              >
+                {shortUrl}
+              </a>
+
+              <button
+                onClick={handleCopy}
+                className="
+                  px-5
+                  py-3
+                  rounded-xl
+                  bg-black
+                  text-white
+                "
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+
+            </div>
+
+          </div>
+
         )}
+
+        <div className="text-center text-sm text-gray-400 mt-8">
+          Fast · Free · No Signup
+        </div>
+
       </div>
+
     </main>
+
   );
 }
