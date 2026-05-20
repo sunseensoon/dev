@@ -53,8 +53,8 @@ export default function ShortenForm() {
         className="w-full rounded-xl px-4 py-3 text-sm outline-none bg-bg border border-border text-white transition focus:ring-2 focus:ring-accent placeholder:text-muted"
       />
 
-      <div className="flex items-center rounded-xl border border-border bg-bg overflow-hidden focus-within:ring-2 focus-within:ring-accent transition">
-        <span className="px-3 text-sm text-muted whitespace-nowrap select-none">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center rounded-xl border border-border bg-bg overflow-hidden focus-within:ring-2 focus-within:ring-accent transition">
+        <span className="px-3 py-2 sm:py-0 text-sm text-muted whitespace-nowrap select-none border-b border-border sm:border-b-0">
           {DISPLAY_DOMAIN}
         </span>
         <input
@@ -62,7 +62,7 @@ export default function ShortenForm() {
           placeholder="custom-alias (optional)"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="flex-1 py-3 pr-4 text-sm outline-none bg-transparent text-white placeholder:text-muted"
+          className="flex-1 py-3 px-3 sm:px-0 sm:pr-4 text-sm outline-none bg-transparent text-white placeholder:text-muted"
         />
       </div>
 
