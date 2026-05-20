@@ -1,0 +1,35 @@
+{
+  "name": "minguri",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "docker.dev": "docker compose -f docker-compose.yaml -f docker-compose-dev.yaml up",
+    "docker.dev.build": "docker compose -f docker-compose.yaml -f docker-compose-dev.yaml up --build",
+    "docker.prod": "docker compose -f docker-compose.yaml -f docker-compose-prod.yaml up -d",
+    "docker.prod.build": "docker compose -f docker-compose.yaml -f docker-compose-prod.yaml up -d --build",
+    "docker.down": "docker compose down"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^16",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
