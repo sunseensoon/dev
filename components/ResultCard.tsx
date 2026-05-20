@@ -16,18 +16,19 @@ export default function ResultCard({ shortUrl }: Props) {
   }
 
   return (
-    <div className="w-full rounded-xl bg-card border border-border p-4 flex items-center justify-between gap-4">
+    <div className="w-full rounded-xl border border-border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
       <a
         href={shortUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-accent text-sm font-medium truncate hover:underline"
+        className="min-w-0 flex-1 truncate text-sm font-medium text-accent hover:underline"
       >
         {shortUrl}
       </a>
+
       <button
         onClick={handleCopy}
-        className="shrink-0 rounded-lg px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all hover:scale-[0.97] active:scale-[0.94] bg-white text-bg"
+        className="w-full sm:w-auto shrink-0 rounded-lg border border-border px-4 py-2 text-xs font-semibold transition-all hover:bg-white hover:text-bg"
       >
         {copied ? "Copied!" : "Copy"}
       </button>
