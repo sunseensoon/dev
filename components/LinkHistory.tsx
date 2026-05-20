@@ -15,58 +15,43 @@ export default function LinkHistory({ history, onClear }: Props) {
 
   async function handleCopy(shortUrl: string, code: string) {
     await navigator.clipboard.writeText(shortUrl)
-
     setCopiedCode(code)
-
-    setTimeout(() => {
-      setCopiedCode(null)
-    }, 2000)
+    setTimeout(() => setCopiedCode(null), 2000)
   }
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs uppercase tracking-widest text-muted">
-          Recent links
-        </p>
-
+    <div className="w-full flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted uppercase tracking-widest">Recent links</p>
         <button
           onClick={onClear}
-          className="shrink-0 text-xs text-red-400 transition-colors hover:text-red-300"
+          className="text-xs text-red-500 hover:text-red-400 transition-colors"
         >
           Clear all
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         {history.map((item) => (
           <div
             key={item.code}
-            className="w-full min-w-0 rounded-xl border border-border bg-card p-4"
+            className="w-full rounded-xl bg-card border border-border p-3 flex flex-col gap-2"
           >
-            <div className="flex flex-col gap-3">
-              <div className="min-w-0">
-                <a
-                  href={item.shortUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block truncate text-sm font-medium text-accent hover:underline"
-                >
-                  {item.shortUrl}
-                </a>
-
-                <p className="truncate text-xs text-muted">
-                  {item.originalUrl}
-                </p>
-              </div>
-
-              <button
-                onClick={() => handleCopy(item.shortUrl, item.code)}
-                className="w-full rounded-lg border border-border py-3 text-sm font-semibold transition-colors hover:bg-white hover:text-bg"
-              >
-                {copiedCode === item.code ? "Copied!" : "Copy"}
-              </button>
-            </div>
+            <a
+              href={item.shortUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent text-sm font-medium hover:underline break-all"
+            >
+              {item.shortUrl}
+            </a>
+            <p className="text-xs text-muted break-all">{item.originalUrl}</p>
+            <button
+              onClick={() => handleCopy(item.shortUrl, item.code)}
+              className="w-full rounded-lg py-1.5 text-xs font-semibold transition-all hover:scale-[0.99] active:scale-[0.98] bg-white text-bg"
+            >
+              {copiedCode === item.code ? "Copied!" : "Copy"}
+            </button>
           </div>
         ))}
       </div>
