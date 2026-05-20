@@ -19,3 +19,10 @@ export interface LinkRecord {
   clicks: number
   createdAt: Date
 }
+
+export interface HistoryItem {
+  shortUrl: string
+  originalUrl: string
+  code: string
+  createdAt: string
+}

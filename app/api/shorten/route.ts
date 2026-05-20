@@ -1,14 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateUrl, validateCode, generateCode } from "@/lib/validateUrl"
+import { checkRateLimit } from "@/lib/rateLimit"
 import type { ShortenRequest, ShortenResponse, ApiError } from "@/types"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://minguri.vercel.app"
 const MAX_CODE_ATTEMPTS = 5
 
+function getIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown"
+  )
+}
+
 export async function POST(
   req: NextRequest
 ): Promise<NextResponse<ShortenResponse | ApiError>> {
+  const ip = getIp(req)
+  const { allowed, retryAfter } = checkRateLimit(ip)
+
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      }
+    )
+  }
+
   let body: ShortenRequest
 
   try {
@@ -48,7 +70,6 @@ export async function POST(
     })
   }
 
-  // Auto-generate a unique code
   for (let i = 0; i < MAX_CODE_ATTEMPTS; i++) {
     const code = generateCode()
     const existing = await prisma.link.findUnique({ where: { code } })
