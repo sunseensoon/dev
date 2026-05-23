@@ -1,7 +1,7 @@
 #Install dependencies
 FROM node:24-alpine AS deps
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
@@ -12,7 +12,7 @@ WORKDIR /app
 #Required by prisma generate at build time — not used for actual DB connection
 ENV DATABASE_URL="postgresql://dummy:dummy@dummy/dummy"
 RUN apk add --no-cache openssl
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm exec prisma generate
@@ -22,7 +22,7 @@ RUN pnpm build
 FROM node:24-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
 ENV NODE_ENV=production
 
 #Standalone output sudah include semua yang dibutuhkan

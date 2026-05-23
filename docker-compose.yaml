@@ -1,7 +1,7 @@
 services:
   app:
+    container_name: minguri-app
     build:
-      container_name: minguri-app
       context: .
       dockerfile: Dockerfile
     ports:
