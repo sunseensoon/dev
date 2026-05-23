@@ -7,7 +7,7 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 echo "Waiting for database..."
-until pnpm exec prisma db execute --stdin <<< "SELECT 1" > /dev/null 2>&1; do
+until pnpm exec prisma db execute --sql "SELECT 1" > /dev/null 2>&1; do
   echo "Database not ready, retrying in 2s..."
   sleep 2
 done
