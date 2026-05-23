@@ -12,7 +12,6 @@ export default async function RedirectPage({ params }: Props) {
 
   if (!link) notFound()
 
-  // Increment click count without blocking the redirect
   prisma.link.update({
     where: { code },
     data: { clicks: { increment: 1 } },

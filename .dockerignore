@@ -1,0 +1,42 @@
+# Dependencies — akan di-install ulang di stage deps
+node_modules
+
+# Next.js build output — akan di-generate ulang di stage builder
+.next
+
+# Environment files — JANGAN pernah masuk ke image
+.env
+.env.local
+.env.development
+.env.production
+
+# Version control
+.git
+.gitignore
+
+# Docker files sendiri
+Dockerfile
+docker-compose*.yaml
+.dockerignore
+
+# Development tools
+.eslintrc*
+eslint.config.*
+.prettierrc*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# README
+README.md
+AGENTS.md
