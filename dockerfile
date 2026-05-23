@@ -18,24 +18,26 @@ COPY . .
 RUN pnpm exec prisma generate
 RUN pnpm build
 
-#Production runner
+# Production runner
 FROM node:24-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.2.2 --activate
+
 ENV NODE_ENV=production
 
-#Standalone output sudah include semua yang dibutuhkan
+# Install prisma CLI untuk migrations
+RUN npm install -g prisma@6.19.3
+
+# Standalone output
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Prisma butuh schema dan migrations saat runtime
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
-COPY --from=builder /app/node_modules/.modules.yaml ./node_modules/.modules.yaml
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
