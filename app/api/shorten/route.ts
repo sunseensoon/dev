@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { validateUrl, validateCode, generateCode } from "@/lib/validateUrl"
 import { checkRateLimit } from "@/lib/rateLimit"
-import type { ShortenRequest, ShortenResponse, ApiError } from "@/types"
+import type { ShortenResponse, ApiResponse } from "@/types"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://minguri.vercel.app"
 const MAX_CODE_ATTEMPTS = 5
@@ -15,75 +16,81 @@ function getIp(req: NextRequest): string {
   )
 }
 
+function ok<T>(data: T): NextResponse<ApiResponse<T>> {
+  return NextResponse.json({ success: true, data })
+}
+
+function fail(error: string, status: number, headers?: HeadersInit): NextResponse<ApiResponse<never>> {
+  return NextResponse.json({ success: false, error }, { status, headers })
+}
+
 export async function POST(
   req: NextRequest
-): Promise<NextResponse<ShortenResponse | ApiError>> {
-  const ip = getIp(req)
-  const { allowed, retryAfter } = checkRateLimit(ip)
+): Promise<NextResponse<ApiResponse<ShortenResponse>>> {
 
+  const { allowed, retryAfter } = checkRateLimit(getIp(req))
   if (!allowed) {
-    return NextResponse.json(
-      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
-      {
-        status: 429,
-        headers: { "Retry-After": String(retryAfter) },
-      }
+    return fail(
+      `Too many requests. Try again in ${retryAfter} seconds.`,
+      429,
+      { "Retry-After": String(retryAfter) }
     )
   }
 
-  let body: ShortenRequest
-
+  let body: { url: string; code?: string }
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 })
+    return fail("Invalid request body.", 400)
   }
 
   const { url, code: customCode } = body
 
   const urlError = validateUrl(url)
-  if (urlError) {
-    return NextResponse.json({ error: urlError }, { status: 422 })
-  }
+  if (urlError) return fail(urlError, 422)
 
-  if (customCode !== undefined && customCode !== "") {
+  if (customCode?.trim()) {
     const codeError = validateCode(customCode)
-    if (codeError) {
-      return NextResponse.json({ error: codeError }, { status: 422 })
-    }
+    if (codeError) return fail(codeError, 422)
 
-    const existing = await prisma.link.findUnique({ where: { code: customCode } })
-    if (existing) {
-      return NextResponse.json(
-        { error: "That code is already taken. Try a different one." },
-        { status: 409 }
-      )
-    }
-
-    const link = await prisma.link.create({
-      data: { url, code: customCode },
-    })
-
-    return NextResponse.json({
-      shortUrl: `${BASE_URL}/${link.code}`,
-      code: link.code,
-    })
-  }
-
-  for (let i = 0; i < MAX_CODE_ATTEMPTS; i++) {
-    const code = generateCode()
-    const existing = await prisma.link.findUnique({ where: { code } })
-    if (!existing) {
-      const link = await prisma.link.create({ data: { url, code } })
-      return NextResponse.json({
+    try {
+      const link = await prisma.link.create({
+        data: { url, code: customCode },
+      })
+      return ok<ShortenResponse>({
         shortUrl: `${BASE_URL}/${link.code}`,
         code: link.code,
       })
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return fail("That code is already taken. Try a different one.", 409)
+      }
+      return fail("Database error.", 503)
     }
   }
 
-  return NextResponse.json(
-    { error: "Could not generate a unique code. Please try again." },
-    { status: 500 }
-  )
+  for (let i = 0; i < MAX_CODE_ATTEMPTS; i++) {
+    try {
+      const link = await prisma.link.create({
+        data: { url, code: generateCode() },
+      })
+      return ok<ShortenResponse>({
+        shortUrl: `${BASE_URL}/${link.code}`,
+        code: link.code,
+      })
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        continue
+      }
+      return fail("Database error.", 503)
+    }
+  }
+
+  return fail("Could not generate a unique code. Please try again.", 500)
 }
