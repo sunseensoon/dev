@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import ResultCard from "@/components/ResultCard"
 import LinkHistory from "@/components/LinkHistory"
-import type { ShortenResponse, ApiError, HistoryItem } from "@/types"
+import type { ApiResponse, ShortenResponse, HistoryItem } from "@/types"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://minguri.vercel.app"
 const DISPLAY_DOMAIN = BASE_URL.replace(/^https?:\/\//, "") + "/"
@@ -50,30 +50,32 @@ export default function ShortenForm() {
         body: JSON.stringify({ url, code: code.trim() || undefined }),
       })
 
-      const data: ShortenResponse | ApiError = await res.json()
+      const data: ApiResponse<ShortenResponse> = await res.json()
 
-      if (!res.ok) {
-        setError((data as ApiError).error)
-      } else {
-        const response = data as ShortenResponse
-        setResult(response)
-        setCode("")
-
-        const newItem: HistoryItem = {
-          shortUrl: response.shortUrl,
-          originalUrl: url,
-          code: response.code,
-          createdAt: new Date().toISOString(),
-        }
-
-        const updated = [newItem, ...history.filter((h) => h.code !== response.code)].slice(
-          0,
-          MAX_HISTORY
-        )
-        setHistory(updated)
-        saveHistory(updated)
-        setUrl("")
+      if (!data.success) {
+        setError(data.error)
+        return
       }
+
+      const { shortUrl, code: returnedCode } = data.data
+      setResult(data.data)
+      setCode("")
+
+      const newItem: HistoryItem = {
+        shortUrl,
+        url,
+        code: returnedCode,
+        createdAt: new Date().toISOString(),
+      }
+
+      const updated = [
+        newItem,
+        ...history.filter((h) => h.code !== returnedCode),
+      ].slice(0, MAX_HISTORY)
+
+      setHistory(updated)
+      saveHistory(updated)
+      setUrl("")
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {

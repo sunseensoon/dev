@@ -45,7 +45,7 @@ export default function LinkHistory({ history, onClear }: Props) {
             >
               {item.shortUrl}
             </a>
-            <p className="text-xs text-muted break-all">{item.originalUrl}</p>
+            <p className="text-xs text-muted break-all">{item.url}</p>
             <button
               onClick={() => handleCopy(item.shortUrl, item.code)}
               className="w-full rounded-lg py-1.5 text-xs font-semibold transition-all hover:scale-[0.99] active:scale-[0.98] bg-white text-bg"
